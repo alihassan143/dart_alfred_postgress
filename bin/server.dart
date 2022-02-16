@@ -21,9 +21,9 @@ void main(List<String> arguments) async {
     exitCode = 64;
     return;
   }
-   await connection.open().then((value) => print("database connected"));
+
+  await connection.open().then((value) => print("database connected"));
   ApiRoutes().alfedRoutes();
 
   await app.listen(port);
-
 }

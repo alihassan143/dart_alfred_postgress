@@ -51,7 +51,6 @@ Future<Map<String, dynamic>> loginUser(String email, String password) async {
   PostgreSQLResult? result;
   bool error = false;
 
-
   try {
     result = await connection.query(
         'SELECT * from users WHERE email =@email AND password=@password',
@@ -59,8 +58,6 @@ Future<Map<String, dynamic>> loginUser(String email, String password) async {
   } catch (_) {
     error = true;
   }
-
-
 
   if (error == true) {
     return {"error": true};
@@ -75,7 +72,8 @@ Future<Map<String, dynamic>> loginUser(String email, String password) async {
         "id": result.first[0],
         "name": result.first[1],
         "email": result.first[2],
-        "image": result.first[4]
+        "image": result.first[4],
+        "created_at": result.first[5]
       }
     };
   }
@@ -103,15 +101,15 @@ Future<Map<String, dynamic>> signupSave(
   PostgreSQLResult? result;
   bool error = false;
 
-
   try {
     await connection.query(
-        ' INSERT INTO users(name,email,password,image) VALUES (@name,@email,@password,@image)',
+        ' INSERT INTO users(name,email,password,image,created_at) VALUES (@name,@email,@password,@image,@created_at)',
         substitutionValues: {
           "name": name,
           "email": email,
           "password": password,
-          "image": image
+          "image": image,
+          "created_at": DateTime.now().toIso8601String()
         });
   } on PostgreSQLException catch (e) {
     print(e.message);
@@ -126,7 +124,6 @@ Future<Map<String, dynamic>> signupSave(
     error = true;
   }
 
-
   if (error == true) {
     return {"error": true};
   } else if (result == null) {
@@ -140,7 +137,8 @@ Future<Map<String, dynamic>> signupSave(
         "id": result.first[0],
         "name": result.first[1],
         "email": result.first[2],
-        "image": result.first[4]
+        "image": result.first[4],
+        "created_at": result.first[5]
       }
     };
   }
