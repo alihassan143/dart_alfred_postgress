@@ -9,40 +9,43 @@ import '../server.dart';
 class AuthHandler {
   static login(HttpRequest req, HttpResponse res) async {
     final body = await req.body as Map<String, dynamic>;
-    final result = await loginUser(body["email"], body["password"]);
-    if (result["error"] == true) {
-      throw AlfredException(202, {"erro": "user  not exists"});
-    } else {
+    bool emailExists = await checkEmail(body["email"]);
+    if (emailExists == true) {
+      final result = await loginUser(body["email"], body["password"]);
+
       return result;
+    } else {
+      throw AlfredException(400, {"error": "user  not exists"});
     }
   }
 
   static signup(HttpRequest req, HttpResponse res) async {
     final body = await req.bodyAsJsonMap;
+    bool emailExists = await checkEmail(body["email"]);
+    if (emailExists == false) {
+      // Create the upload directory if it doesn't exist
+      if (await directory.exists() == false) {
+        await directory.create();
+      }
 
-    // Create the upload directory if it doesn't exist
-    if (await directory.exists() == false) {
-      await directory.create();
-    }
+      // Get the uploaded file content
+      final uploadedFile = (body['image'] as HttpBodyFileUpload);
+      var fileBytes = (uploadedFile.content as List<int>);
 
-    // Get the uploaded file content
-    final uploadedFile = (body['image'] as HttpBodyFileUpload);
-    var fileBytes = (uploadedFile.content as List<int>);
+      // Create the local file name and save the file
+      await File(join('${directory.path}/${uploadedFile.filename}'))
+          .writeAsBytes(fileBytes);
 
-    // Create the local file name and save the file
-    await File(join('${directory.path}/${uploadedFile.filename}'))
-        .writeAsBytes(fileBytes);
+      final result = await signupSave(
+          body["email"],
+          body["password"],
+          body['name'],
+          "http://localhost:${req.headers.port}/images/" +
+              join('/${uploadedFile.filename}'));
 
-    final result = await signupSave(
-        body["email"],
-        body["password"],
-        body['name'],
-        "http://localhost:${req.headers.port}/images/" +
-            join('/${uploadedFile.filename}'));
-    if (result["error"] == true) {
-      throw AlfredException(202, {"erro": "user  not exists"});
-    } else {
       return result;
+    } else {
+      throw AlfredException(400, {"error": "email already exists"});
     }
   }
 }
@@ -60,11 +63,11 @@ Future<Map<String, dynamic>> loginUser(String email, String password) async {
   }
 
   if (error == true) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "some error occur"});
   } else if (result == null) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "cannot find user"});
   } else if (result.isEmpty) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "cannot find user"});
   } else {
     return {
       "error": false,
@@ -100,6 +103,7 @@ Future<Map<String, dynamic>> signupSave(
     String email, String password, String name, String image) async {
   PostgreSQLResult? result;
   bool error = false;
+  bool usererror = false;
 
   try {
     await connection.query(
@@ -111,25 +115,25 @@ Future<Map<String, dynamic>> signupSave(
           "image": image,
           "created_at": DateTime.now().toIso8601String()
         });
-  } on PostgreSQLException catch (e) {
-    print(e.message);
+  } on PostgreSQLException catch (_) {
     error = true;
   }
   try {
     result = await connection.query(
         'SELECT * from users WHERE email =@email AND password=@password',
         substitutionValues: {"email": email, "password": password});
-  } on PostgreSQLException catch (e) {
-    print(e.message);
-    error = true;
+  } on PostgreSQLException catch (_) {
+    usererror = true;
   }
 
   if (error == true) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "some error occur"});
   } else if (result == null) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "some error occur"});
   } else if (result.isEmpty) {
-    return {"error": true};
+    throw AlfredException(400, {"error": true, "message": "some error occur"});
+  } else if (usererror) {
+    throw AlfredException(400, {"error": true, "message": "some error occur"});
   } else {
     return {
       "error": false,
@@ -142,6 +146,7 @@ Future<Map<String, dynamic>> signupSave(
       }
     };
   }
+
   // await connection.query('''
   //   INSERT INTO customers (name,email,address,country)
   //   VALUES ('Jermaine Oppong','jermaine@oppong.co','1212 Some Street','United Kingdom')
@@ -159,4 +164,19 @@ Future<Map<String, dynamic>> signupSave(
 
   //   ''');
   // }
+}
+
+Future<bool> checkEmail(String email) async {
+  PostgreSQLResult? result;
+  try {
+    result = await connection.query('SELECT * from users WHERE email =@email',
+        substitutionValues: {"email": email});
+    if (result.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  } on PostgreSQLException catch (_) {
+    return false;
+  }
 }
