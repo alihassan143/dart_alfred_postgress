@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:alfred/alfred.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:path/path.dart';
 import 'package:postgres/postgres.dart';
 
@@ -52,18 +53,23 @@ class AuthHandler {
 
 Future<Map<String, dynamic>> loginUser(String email, String password) async {
   PostgreSQLResult? result;
+  final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
   bool error = false;
 
   try {
     result = await connection.query(
         'SELECT * from users WHERE email =@email AND password=@password',
-        substitutionValues: {"email": email, "password": password});
+        substitutionValues: {
+          "email": email,
+          "password": encryptedPasswrod.base16
+        });
   } catch (_) {
     error = true;
   }
 
   if (error == true) {
-    throw AlfredException(400, {"error": true, "message": "some error occur"});
+    throw AlfredException(
+        400, {"error": true, "message": "email or password in incorrect"});
   } else if (result == null) {
     throw AlfredException(400, {"error": true, "message": "cannot find user"});
   } else if (result.isEmpty) {
@@ -101,6 +107,7 @@ Future<Map<String, dynamic>> loginUser(String email, String password) async {
 
 Future<Map<String, dynamic>> signupSave(
     String email, String password, String name, String image) async {
+  final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
   PostgreSQLResult? result;
   bool error = false;
   bool usererror = false;
@@ -111,7 +118,7 @@ Future<Map<String, dynamic>> signupSave(
         substitutionValues: {
           "name": name,
           "email": email,
-          "password": password,
+          "password": encryptedPasswrod.base16,
           "image": image,
           "created_at": DateTime.now().toIso8601String()
         });
@@ -121,17 +128,20 @@ Future<Map<String, dynamic>> signupSave(
   try {
     result = await connection.query(
         'SELECT * from users WHERE email =@email AND password=@password',
-        substitutionValues: {"email": email, "password": password});
+        substitutionValues: {
+          "email": email,
+          "password": encryptedPasswrod.base16
+        });
   } on PostgreSQLException catch (_) {
     usererror = true;
   }
 
   if (error == true) {
-    throw AlfredException(400, {"error": true, "message": "some error occur"});
+    throw AlfredException(401, {"error": true, "message": "some error occur"});
   } else if (result == null) {
-    throw AlfredException(400, {"error": true, "message": "some error occur"});
+    throw AlfredException(402, {"error": true, "message": "some error occur"});
   } else if (result.isEmpty) {
-    throw AlfredException(400, {"error": true, "message": "some error occur"});
+    throw AlfredException(403, {"error": true, "message": "some error occur"});
   } else if (usererror) {
     throw AlfredException(400, {"error": true, "message": "some error occur"});
   } else {
