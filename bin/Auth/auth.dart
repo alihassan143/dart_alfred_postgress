@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:alfred/alfred.dart';
-import 'package:encrypt/encrypt.dart';
+
 import 'package:path/path.dart';
 import 'package:postgres/postgres.dart';
 
