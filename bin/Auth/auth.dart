@@ -52,18 +52,16 @@ class AuthHandler {
     }
   }
 
-  // static sendOtpTOEmail(HttpRequest req, HttpResponse res) async {
-  //   final body = await req.body as Map<String, dynamic>;
-  //   bool emailExists = await PostGressAuth().checkEmail(body["email"]);
-  //   if (emailExists == true) {
-  //     final result = await PostGressAuth().senddOtpTOEmail(body["email"]);
-  //     if (result == true) {
-  //       return {"error": false, "message": "otp is send to email"};
-  //     }
-  //   } else {
-  //     throw AlfredException(400, {"error": "email  not exists"});
-  //   }
-  // }
+  static sendOtpTOEmail(HttpRequest req, HttpResponse res) async {
+    final body = await req.body as Map<String, dynamic>;
+    bool emailExists = await PostGressAuth().checkEmail(body["email"]);
+    if (emailExists == true) {
+      final result = await PostGressAuth().sendOtpTOEmail(body["email"]);
+      return result;
+    } else {
+      throw AlfredException(400, {"error": "email  not exists"});
+    }
+  }
 
   // static verifyEmailOtp(HttpRequest req, HttpResponse res) async {
   //   final body = await req.body as Map<String, dynamic>;

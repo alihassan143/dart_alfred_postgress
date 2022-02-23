@@ -1,7 +1,9 @@
 import 'package:alfred/alfred.dart';
+import 'package:otp/otp.dart';
 
 import 'package:postgres/postgres.dart';
 
+import '../Secrets/token.dart';
 import '../constants.dart';
 
 class PostGressAuth {
@@ -33,6 +35,7 @@ class PostGressAuth {
     } else {
       return {
         "error": false,
+        "token": CreateToken().createToken(result.first[0]),
         "users": {
           "id": result.first[0],
           "name": result.first[1],
@@ -107,6 +110,7 @@ class PostGressAuth {
     } else {
       return {
         "error": false,
+        "token": CreateToken().createToken(result.first[0]),
         "users": {
           "id": result.first[0],
           "name": result.first[1],
@@ -144,7 +148,7 @@ class PostGressAuth {
 
     try {
       result = await connection.query(
-          'UPDATE users SET password =@password WHERE email=@email',
+          'UPDATE users SET password =@password WHERE email =@email',
           substitutionValues: {
             "email": email,
             "password": encryptedPasswrod.base16
@@ -156,12 +160,6 @@ class PostGressAuth {
     if (error == true) {
       throw AlfredException(
           400, {"error": true, "message": "email or password in incorrect"});
-    } else if (result == null) {
-      throw AlfredException(
-          400, {"error": true, "message": "cannot find user"});
-    } else if (result.isEmpty) {
-      throw AlfredException(
-          400, {"error": true, "message": "cannot find user"});
     } else {
       return {"error": false, "message": "password reset successfull"};
     }
@@ -184,23 +182,14 @@ class PostGressAuth {
     // }
   }
 
-  // Future<bool> senddOtpTOEmail(String email) async {
-  //   EmailAuth emailAuth = EmailAuth(
-  //     sessionName: "Sample session",
-  //   );
-  //   try {
-  //     bool result = await emailAuth.sendOtp(recipientMail: email, otpLength: 6);
-  //     if (result == true) {
-  //       return true;
-  //     } else {
-  //       throw AlfredException(
-  //           400, {"error": true, "message": "email not correct"});
-  //     }
-  //   } catch (_) {
-  //     throw AlfredException(
-  //         400, {"error": true, "message": "Some Error Occur"});
-  //   }
-  // }
+  Future<Map<String, dynamic>> sendOtpTOEmail(String email) async {
+    Map<String, dynamic> data = await emailId(email);
+    return {
+      "token": CreateToken().createToken(data["id"]),
+      "code": OTP.generateTOTPCodeString(
+          'JBSWY3DPEHPK3PXP', DateTime.now().millisecondsSinceEpoch)
+    };
+  }
 
   // Future<bool> verifyEmail(String email, String otp) async {
   //   EmailAuth emailAuth = EmailAuth(
@@ -232,6 +221,26 @@ class PostGressAuth {
       }
     } on PostgreSQLException catch (_) {
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> emailId(String email) async {
+    PostgreSQLResult? result;
+    try {
+      result = await connection.query('SELECT * from users WHERE email =@email',
+          substitutionValues: {"email": email});
+      if (result.isNotEmpty) {
+        return {
+          "id": result.first[0],
+          "exists": true,
+        };
+      } else {
+        throw AlfredException(
+            400, {"error": true, "message": "email not correct"});
+      }
+    } on PostgreSQLException catch (_) {
+      throw AlfredException(
+          400, {"error": true, "message": "email not correct"});
     }
   }
 }
