@@ -4,7 +4,7 @@ import '../Secrets/token.dart';
 
 class ApiMiddleWare {
   //applied middle ware for authentic email 
-  static forgotPassword(HttpRequest req, HttpResponse res) {
+  static applicationMiddelWare(HttpRequest req, HttpResponse res) {
     if (req.headers.value('Authorization') != null) {
       String token = req.headers.value('Authorization')!;
       final parts = token.split(' ');
