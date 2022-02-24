@@ -7,7 +7,9 @@ import '../Secrets/token.dart';
 import '../constants.dart';
 
 class PostGressAuth {
+  //login user to return the user data from the database
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
+
     PostgreSQLResult? result;
     final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
     bool error = false;
@@ -63,6 +65,8 @@ class PostGressAuth {
     //   ''');
     // }
   }
+  //that is used to save the user data is postgress sql server
+
 
   Future<Map<String, dynamic>> signupSave(
       String email, String password, String name, String image) async {
@@ -139,15 +143,14 @@ class PostGressAuth {
     //   ''');
     // }
   }
-
+//update existing user password 
   Future<Map<String, dynamic>> updatePassword(
       String email, String password) async {
-    PostgreSQLResult? result;
     final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
     bool error = false;
 
     try {
-      result = await connection.query(
+      await connection.query(
           'UPDATE users SET password =@password WHERE email =@email',
           substitutionValues: {
             "email": email,
@@ -181,7 +184,7 @@ class PostGressAuth {
     //   ''');
     // }
   }
-
+//that generate the otp return the generated otp so the app verifies the otp currently it did not send the otp to email it will be implemented in the future 
   Future<Map<String, dynamic>> sendOtpTOEmail(String email) async {
     Map<String, dynamic> data = await emailId(email);
     return {
@@ -208,7 +211,7 @@ class PostGressAuth {
   //         400, {"error": true, "message": "Some Error Occur"});
   //   }
   // }
-
+//check that email exists or not in the database
   Future<bool> checkEmail(String email) async {
     PostgreSQLResult? result;
     try {
@@ -223,7 +226,7 @@ class PostGressAuth {
       return false;
     }
   }
-
+//that return the database generated user id so the token can be generated against that user 
   Future<Map<String, dynamic>> emailId(String email) async {
     PostgreSQLResult? result;
     try {

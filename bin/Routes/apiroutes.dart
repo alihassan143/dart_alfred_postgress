@@ -7,7 +7,6 @@ class ApiRoutes {
     app.post("/api/login", AuthHandler.login);
     app.post("/api/signup", AuthHandler.signup);
     app.post("/api/forgotPassword", AuthHandler.sendOtpTOEmail);
-
     app.post("/api/updatePassword", AuthHandler.updatePassword,
         middleware: [ApiMiddleWare.forgotPassword]);
     app.get('/images/*', (req, res) => directory);
