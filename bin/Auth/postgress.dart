@@ -5,11 +5,11 @@ import 'package:postgres/postgres.dart';
 
 import '../Secrets/token.dart';
 import '../constants.dart';
+import 'email_auth.dart';
 
 class PostGressAuth {
   //login user to return the user data from the database
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
-
     PostgreSQLResult? result;
     final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
     bool error = false;
@@ -66,7 +66,6 @@ class PostGressAuth {
     // }
   }
   //that is used to save the user data is postgress sql server
-
 
   Future<Map<String, dynamic>> signupSave(
       String email, String password, String name, String image) async {
@@ -143,7 +142,8 @@ class PostGressAuth {
     //   ''');
     // }
   }
-//update existing user password 
+
+//update existing user password
   Future<Map<String, dynamic>> updatePassword(
       String email, String password) async {
     final encryptedPasswrod = encrypter.encrypt(password, iv: iv);
@@ -184,14 +184,22 @@ class PostGressAuth {
     //   ''');
     // }
   }
-//that generate the otp return the generated otp so the app verifies the otp currently it did not send the otp to email it will be implemented in the future 
+
+//that generate the otp return the generated otp so the app verifies the otp currently it did not send the otp to email it will be implemented in the future
   Future<Map<String, dynamic>> sendOtpTOEmail(String email) async {
     Map<String, dynamic> data = await emailId(email);
-    return {
-      "token": CreateToken().createToken(data["id"]),
-      "code": OTP.generateTOTPCodeString(
-          'JBSWY3DPEHPK3PXP', DateTime.now().millisecondsSinceEpoch)
-    };
+    String otp = OTP.generateTOTPCodeString(
+        'JBSWY3DPEHPK3PXP', DateTime.now().millisecondsSinceEpoch);
+    print("now here");
+
+      await VerifyEmail().sendOtpToEmail(otp, email);
+
+      return {
+        "success": true,
+        "token": CreateToken().createForgetPasswordToken(data["id"], otp),
+        "message": "otp send successfull"
+      };
+    
   }
 
   // Future<bool> verifyEmail(String email, String otp) async {
@@ -226,7 +234,8 @@ class PostGressAuth {
       return false;
     }
   }
-//that return the database generated user id so the token can be generated against that user 
+
+//that return the database generated user id so the token can be generated against that user
   Future<Map<String, dynamic>> emailId(String email) async {
     PostgreSQLResult? result;
     try {
