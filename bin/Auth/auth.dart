@@ -4,6 +4,7 @@ import 'package:alfred/alfred.dart';
 
 import 'package:path/path.dart';
 
+import '../Secrets/token.dart';
 import '../constants.dart';
 
 import 'postgress.dart';
@@ -11,7 +12,7 @@ import 'postgress.dart';
 class AuthHandler {
   //api route for login request
   static login(HttpRequest req, HttpResponse res) async {
-    //it accepts the raw json data 
+    //it accepts the raw json data
     final body = await req.body as Map<String, dynamic>;
     //this check that email is exits in the database or not
 
@@ -29,7 +30,7 @@ class AuthHandler {
   //sign up api route
 
   static signup(HttpRequest req, HttpResponse res) async {
-    //it is form data api it accepts all the api data in form 
+    //it is form data api it accepts all the api data in form
     final body = await req.bodyAsJsonMap;
     //check if use exists or not
     bool emailExists = await PostGressAuth().checkEmail(body["email"]);
@@ -59,9 +60,10 @@ class AuthHandler {
       throw AlfredException(400, {"error": "email already exists"});
     }
   }
+
 //
   static sendOtpTOEmail(HttpRequest req, HttpResponse res) async {
-    //it accept the json 
+    //it accept the json
     final body = await req.body as Map<String, dynamic>;
     //chech user exists or not
     bool emailExists = await PostGressAuth().checkEmail(body["email"]);
@@ -74,19 +76,22 @@ class AuthHandler {
     }
   }
 
-  // static verifyEmailOtp(HttpRequest req, HttpResponse res) async {
-  //   final body = await req.body as Map<String, dynamic>;
-  //   bool emailExists = await PostGressAuth().checkEmail(body["email"]);
-  //   if (emailExists == true) {
-  //     final result =
-  //         await PostGressAuth().verifyEmail(body["email"], body["password"]);
-  //     if (result == true) {
-  //       return {"error": false, "message": "otp is verified"};
-  //     }
-  //   } else {
-  //     throw AlfredException(400, {"error": "email  not exists"});
-  //   }
-  // }
+  static verifyEmailOtp(HttpRequest req, HttpResponse res) async {
+    final body = await req.body as Map<String, dynamic>;
+    String token = req.headers.value('Authorization')!;
+    final parts = token.split(' ')[1];
+    bool emailExists = await PostGressAuth().checkEmail(body["email"]);
+    if (emailExists == true) {
+      final result = CreateToken().forgotPasswordTokenVerification(token);
+      if (parts == result) {
+        return {"error": false, "message": "otp verified"};
+      } else {
+        throw AlfredException(400, {"error": true, "message": "wrong otp"});
+      }
+    } else {
+      throw AlfredException(400, {"error": "email  not exists"});
+    }
+  }
 
 //api route for update the exiting user who forgot the password
   static updatePassword(HttpRequest req, HttpResponse res) async {
