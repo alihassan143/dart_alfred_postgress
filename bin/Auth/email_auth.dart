@@ -6,17 +6,16 @@ import 'package:mailer/smtp_server.dart';
 
 class VerifyEmail {
   Future<bool> sendOtpToEmail(String otp, String useremail) async {
-    print("here");
-    final username = 'apikey';
-    final password =
-        "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";
+    final username =
+        'postmaster@sandbox81f1707d34164a5a966a0a25585927dc.mailgun.org';
+    final password = "944c14b129cf1d936efb4bd38e55b7ad-e2e3d8ec-f3ce3a7c";
 
-    final smtpServer = SmtpServer(
-      'smtp.sendgrid.net',
-      port: 25,
-      username: username,
-      password: password,
-    );
+    final smtpServer = SmtpServer('smtp.mailgun.org',
+        ssl: false,
+        port: 587,
+        username: username,
+        password: password,
+        allowInsecure: true);
 
     final message = Message()
       ..from = Address(username, 'Ali Hassan')
@@ -25,7 +24,6 @@ class VerifyEmail {
       ..text = "Your email verification otp code is $otp";
     int statusCode;
     try {
-      print("email is send");
       final sendReport = await send(message, smtpServer);
       print(sendReport.toString());
       statusCode = HttpStatus.ok;

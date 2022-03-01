@@ -80,16 +80,12 @@ class AuthHandler {
     final body = await req.body as Map<String, dynamic>;
     String token = req.headers.value('Authorization')!;
     final parts = token.split(' ')[1];
-    bool emailExists = await PostGressAuth().checkEmail(body["email"]);
-    if (emailExists == true) {
-      final result = CreateToken().forgotPasswordTokenVerification(token);
-      if (parts == result) {
-        return {"error": false, "message": "otp verified"};
-      } else {
-        throw AlfredException(400, {"error": true, "message": "wrong otp"});
-      }
+    print(parts);
+    final result = CreateToken().forgotPasswordTokenVerification(token);
+    if (body["otp"] == result) {
+      return {"error": false, "message": "otp verified"};
     } else {
-      throw AlfredException(400, {"error": "email  not exists"});
+      throw AlfredException(400, {"error": true, "message": "wrong otp"});
     }
   }
 
