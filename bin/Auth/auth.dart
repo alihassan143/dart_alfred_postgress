@@ -79,7 +79,7 @@ class AuthHandler {
   static verifyEmailOtp(HttpRequest req, HttpResponse res) async {
     final body = await req.body as Map<String, dynamic>;
     String token = req.headers.value('Authorization')!;
-    final parts = token.split(' ')[1];
+    final parts = token;
     print(parts);
     final result = CreateToken().forgotPasswordTokenVerification(token);
     if (body["otp"] == result) {

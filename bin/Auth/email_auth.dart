@@ -6,11 +6,10 @@ import 'package:mailer/smtp_server.dart';
 
 class VerifyEmail {
   Future<bool> sendOtpToEmail(String otp, String useremail) async {
-    final username =
-        'postmaster@sandbox81f1707d34164a5a966a0a25585927dc.mailgun.org';
-    final password = "944c14b129cf1d936efb4bd38e55b7ad-e2e3d8ec-f3ce3a7c";
+    final username = 'alihassan143test@gmail.com';
+    final password = "";
 
-    final smtpServer = SmtpServer('smtp.mailgun.org',
+    final smtpServer = SmtpServer('smtp-relay.sendinblue.com',
         ssl: false,
         port: 587,
         username: username,
@@ -25,7 +24,7 @@ class VerifyEmail {
     int statusCode;
     try {
       final sendReport = await send(message, smtpServer);
-      print(sendReport.toString());
+
       statusCode = HttpStatus.ok;
 
       return true;
