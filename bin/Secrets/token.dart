@@ -33,8 +33,8 @@ class CreateToken {
   //     return false;
   //   }
   // }
-  String createForgetPasswordToken(String id, String otp) {
-    final jwt = JWT({"otp": otp}, issuer: 'Ali Hassan', jwtId: id);
+  String createForgetPasswordToken(String id, ) {
+    final jwt = JWT({"userid":id}, issuer: 'Ali Hassan', jwtId: id);
     String token = jwt.sign(SecretKey(SercretOfserver.secret),
         expiresIn: Duration(minutes: 30));
     return token;
@@ -44,14 +44,16 @@ class CreateToken {
     try {
       // Verify a token
       final jwt = JWT.verify(token, SecretKey(SercretOfserver.secret));
-
-      return jwt.payload["otp"];
+      // print(jwt.payload);
+      return jwt.payload["userid"];
     } on JWTExpiredError {
       throw AlfredException(
           400, {"error": true, "message": "your token time is expired"});
     } on JWTError catch (_) {
       throw AlfredException(
           400, {"error": true, "message": "token validation failed"});
+    } on FormatException catch (e) {
+      throw AlfredException(400, {"error": true, "message": e.message});
     }
   }
 
