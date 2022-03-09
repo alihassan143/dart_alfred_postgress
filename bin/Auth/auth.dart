@@ -79,14 +79,10 @@ class AuthHandler {
   static verifyEmailOtp(HttpRequest req, HttpResponse res) async {
     final body = await req.body as Map<String, dynamic>;
     String token = req.headers.value('Authorization')!;
-    final parts = token;
-    print(parts);
-    final result = CreateToken().forgotPasswordTokenVerification(token);
-    if (body["otp"] == result) {
-      return {"error": false, "message": "otp verified"};
-    } else {
-      throw AlfredException(400, {"error": true, "message": "wrong otp"});
-    }
+    final parts = token.split(' ')[1];
+
+    final result = CreateToken().forgotPasswordTokenVerification(parts);
+    return await PostGressAuth().verifyOtpWithEmail(result, body["otp"]);
   }
 
 //api route for update the exiting user who forgot the password
