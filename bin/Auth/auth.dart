@@ -52,7 +52,7 @@ class AuthHandler {
           body["email"],
           body["password"],
           body['name'],
-          "http://localhost:${req.headers.port}/images/" +
+          "https://${req.headers.host}/images/" +
               join('/${uploadedFile.filename}'));
 
       return result;
