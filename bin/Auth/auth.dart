@@ -53,7 +53,8 @@ class AuthHandler {
           body["email"],
           body["password"],
           body['name'],
-          "/images/" + join('/${uploadedFile.filename}'));
+          "https://${req.headers.host}/images/" +
+              join('/${uploadedFile.filename}'));
 
       return result;
     } else {
