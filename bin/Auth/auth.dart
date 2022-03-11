@@ -30,6 +30,7 @@ class AuthHandler {
   //sign up api route
 
   static signup(HttpRequest req, HttpResponse res) async {
+    print(req.headers.host);
     //it is form data api it accepts all the api data in form
     final body = await req.bodyAsJsonMap;
     //check if use exists or not
@@ -52,8 +53,7 @@ class AuthHandler {
           body["email"],
           body["password"],
           body['name'],
-          "http://localhost:${req.headers.port}/images/" +
-              join('/${uploadedFile.filename}'));
+          "/images/" + join('/${uploadedFile.filename}'));
 
       return result;
     } else {
