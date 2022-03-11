@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:alfred/alfred.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:postgres/postgres.dart';
-import 'package:uuid/uuid.dart';
+
 
 //create directory in the server
 final directory = Directory("ApplicationFiles");
