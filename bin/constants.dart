@@ -19,4 +19,5 @@ final connection = PostgreSQLConnection(
   "da60sh8r0bc1on",
   username: "vlvtdlcajnrkai",
   password: "440fff10b00807d81448ad3f2ec060508b08299f5c88aaa48b1c4a830d89cda5",
+  useSSL: true
 );
