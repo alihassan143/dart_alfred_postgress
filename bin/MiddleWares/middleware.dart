@@ -3,7 +3,8 @@ import 'package:alfred/alfred.dart';
 import '../Secrets/token.dart';
 
 class ApiMiddleWare {
-  //applied middle ware for authentic email 
+  //applied middle ware for authentic email
+  //
   static applicationMiddelWare(HttpRequest req, HttpResponse res) {
     if (req.headers.value('Authorization') != null) {
       String token = req.headers.value('Authorization')!;
