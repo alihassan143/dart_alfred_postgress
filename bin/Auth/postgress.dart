@@ -2,6 +2,7 @@ import 'package:alfred/alfred.dart';
 // import 'package:otp/otp.dart';
 
 import 'package:postgres/postgres.dart';
+import 'package:uuid/uuid.dart';
 
 import '../Secrets/token.dart';
 import '../constants.dart';
@@ -73,11 +74,12 @@ class PostGressAuth {
     PostgreSQLResult? result;
     bool error = false;
     bool usererror = false;
-
+    final uuid = Uuid().v4();
     try {
       await connection.query(
-          ' INSERT INTO users(name,email,password,image,created_at) VALUES (@name,@email,@password,@image,@created_at)',
+          ' INSERT INTO users(id,name,email,password,image,created_at) VALUES (@id,@name,@email,@password,@image,@created_at)',
           substitutionValues: {
+            "id": uuid,
             "name": name,
             "email": email,
             "password": encryptedPasswrod.base16,
@@ -85,6 +87,7 @@ class PostGressAuth {
             "created_at": DateTime.now().toIso8601String()
           });
     } on PostgreSQLException catch (_) {
+      print(_);
       error = true;
     }
     try {
@@ -95,12 +98,12 @@ class PostGressAuth {
             "password": encryptedPasswrod.base16
           });
     } on PostgreSQLException catch (_) {
+      print(_);
       usererror = true;
     }
 
     if (error == true) {
-      throw AlfredException(
-          401, {"error": true, "message": "some error occur"});
+      throw AlfredException(401, {"error": true, "message": " error occur"});
     } else if (result == null) {
       throw AlfredException(
           402, {"error": true, "message": "some error occur"});
