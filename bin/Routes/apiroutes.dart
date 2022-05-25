@@ -1,5 +1,5 @@
 import '../Auth/auth.dart';
-import '../server.dart';
+import '../basiceserver.dart';
 
 class ApiRoutes {
   alfedRoutes() {

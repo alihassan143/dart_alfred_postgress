@@ -5,7 +5,7 @@ import 'package:alfred/alfred.dart';
 import 'package:path/path.dart';
 import 'package:postgres/postgres.dart';
 
-import '../server.dart';
+import '../basiceserver.dart';
 
 class AuthHandler {
   static login(HttpRequest req, HttpResponse res) async {
